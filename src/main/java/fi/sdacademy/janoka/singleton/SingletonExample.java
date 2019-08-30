@@ -11,4 +11,6 @@ public class SingletonExample {
 
         return INSTANCE;
     }
+
+    private SingletonExample() {}
 }
