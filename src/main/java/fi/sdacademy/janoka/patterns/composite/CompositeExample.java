@@ -3,6 +3,9 @@ package fi.sdacademy.janoka.patterns.composite;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Composite iterates through a list of interface implementations
+ */
 public class CompositeExample {
 
     public interface Department {
