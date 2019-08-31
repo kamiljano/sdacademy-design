@@ -1,74 +1,89 @@
 package fi.sdacademy.janoka.patterns.bridge;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Exposing the object specific logic to be executed in a common place
+ * where it is known how the object specific logic should be executed in the optimal way.
+ *
+ * Allows to decouple compile-time dependencies between classes
+ */
 public class BridgeExample {
 
-    abstract class Vehicle {
-        protected Workshop workShop1;
-        protected Workshop workShop2;
-
-        protected Vehicle(Workshop workShop1, Workshop workShop2) {
-            this.workShop1 = workShop1;
-            this.workShop2 = workShop2;
-        }
-
-        abstract public void manufacture();
+    public interface WorkShop {
+        void work(Vehicle vehicle);
     }
 
-    // Refine abstraction 1 in bridge pattern
-    class Car extends Vehicle {
-        public Car(Workshop workShop1, Workshop workShop2) {
-            super(workShop1, workShop2);
-        }
+    public class ProduceWorkShop implements WorkShop {
 
+        @Override
+        public void work(Vehicle vehicle) {
+            System.out.print("Producing... ");
+            long timeToTake = 300 * vehicle.minWorkTime();
+            try {
+                TimeUnit.MILLISECONDS.sleep(timeToTake);
+            } catch (InterruptedException exp) {
+                // nothing to do for now.
+            }
+            System.out.printf("(Time taken: %d millis), Done.\n", timeToTake);
+        }
+    }
+
+    public abstract class Vehicle {
+        // assempbly line for the workshops
+        protected List<WorkShop> workshops = new ArrayList<WorkShop>();
+
+        public boolean joinWorkshop(WorkShop workshop) {
+            return workshops.add(workshop);
+        }
+        public abstract void manufacture();
+        public abstract int minWorkTime();
+    }
+
+
+    public class Bike extends Vehicle {
         @Override
         public void manufacture() {
-            System.out.print("Car ");
-            workShop1.work();
-            workShop2.work();
+            System.out.println("Manufactoring Bike...");
+            workshops.stream().forEach(workshop -> workshop.work(this));
+            System.out.println("Done.");
+            System.out.println();
+        }
+
+        @Override
+        public int minWorkTime() {
+            return 5;
         }
     }
 
-    // Refine abstraction 2 in bridge pattern
-    class Bike extends Vehicle {
-        public Bike(Workshop workShop1, Workshop workShop2) {
-            super(workShop1, workShop2);
-        }
-
+    public class Car extends Vehicle {
         @Override
         public void manufacture() {
-            System.out.print("Bike ");
-            workShop1.work();
-            workShop2.work();
+            System.out.println("Manufactoring Car");
+            workshops.stream().forEach(workshop -> workshop.work(this));
+            System.out.println("Done.");
+            System.out.println();
         }
-    }
-
-    // Implementor for bridge pattern
-    interface Workshop {
-        abstract public void work();
-    }
-
-    // Concrete implementation 1 for bridge pattern
-    class Produce implements Workshop {
         @Override
-        public void work() {
-            System.out.print("Produced");
+        public int minWorkTime() {
+            return 10;
         }
     }
 
-    // Concrete implementation 2 for bridge pattern
-    class Assemble implements Workshop {
+
+    public class Bus extends Vehicle {
         @Override
-        public void work() {
-            System.out.print(" And");
-            System.out.println(" Assembled.");
+        public void manufacture() {
+            System.out.println("Manufactoring Bus");
+            workshops.stream().forEach(workshop -> workshop.work(this));
+            System.out.println("Done.");
+            System.out.println();
+        }
+        @Override
+        public int minWorkTime() {
+            return 20;
         }
     }
-
-    public void exampleUse() {
-        Vehicle vehicle1 = new Car(new Produce(), new Assemble());
-        vehicle1.manufacture();
-        Vehicle vehicle2 = new Bike(new Produce(), new Assemble());
-        vehicle2.manufacture();
-    }
-
 }
